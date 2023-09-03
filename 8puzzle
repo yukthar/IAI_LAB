@@ -1,0 +1,55 @@
+8 PUZZLE PROBLEM
+
+
+
+import random
+
+goal_state = [[1, 2, 3], [8, 0, 4], [7, 6, 5]]
+
+class PuzzleState:
+    def __init__(self, state):
+        self.state = state
+        self.cost = self.calculate_cost()
+
+    def calculate_cost(self):
+        return sum(1 for i in range(3) for j in range(3) if self.state[i][j] != goal_state[i][j])
+
+    def __lt__(self, other):
+        return self.cost < other.cost
+
+def initialize_state():
+    state = [list(range(1, 9)), [0, 0, 0], [0, 0, 0]]
+    for i in range(2):
+        for j in range(3):
+            k = random.randint(0, 2)
+            state[i][j], state[i + 1][k] = state[i + 1][k], state[i][j]
+    return PuzzleState(state)
+
+def print_state(state):
+    for row in state.state:
+        print(row)
+    print()
+
+def hill_climbing():
+    current_state = initialize_state()
+    while True:
+        print_state(current_state)
+        if current_state.cost == 0:
+            print("Goal state reached!")
+            break
+        neighbors = []
+        i, j = next((x, y) for x in range(3) for y in range(3) if current_state.state[x][y] == 0)
+        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            x, y = i + dx, j + dy
+            if 0 <= x < 3 and 0 <= y < 3:
+                neighbor = [row[:] for row in current_state.state]
+                neighbor[i][j], neighbor[x][y] = neighbor[x][y], neighbor[i][j]
+                neighbors.append(PuzzleState(neighbor))
+        neighbors.sort()
+        if neighbors[0].cost >= current_state.cost:
+            print("Stuck in a local minimum. Exiting...")
+            break
+        current_state = neighbors[0]
+
+if __name__ == "__main__":
+    hill_climbing()
